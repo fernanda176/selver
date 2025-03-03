@@ -1,9 +1,56 @@
 const express = require('express');
-const bodyParser = require('body-parser');
-
+const mysql = require("mysql");
+const cors = require("cors")
 const app = express();
-const port = 3000;
+app.use(cors())
+app.use(express.json())
 
+const connection = mysql.createConnection({
+host: "db4free.net",
+user: "estudiantesweb",
+password:"admin12345",
+database:"cursoweb",
+port:3306
+ })
+connection.connect (err=>{
+    if(err) console.log("err", err);
+    console.log("conectado a mysql")
+})
+
+app.get('/', (req, res) => {
+    return res.send('Ingreso')
+})
+
+app.post("/create",(req,res)=>{
+    console.log('data', req.body)
+    const{ name, last_name, identification, email, phone } = req.body;
+    connection.query('INSERT INTO student ( name, last_name, identification, email, phone) VALUES(?,?,?,?,?)',
+    [ name, last_name, identification, email, phone], (err,result)=>{
+        if(err) console.log('error data',err); 
+        res.json({mensaje:"Person added"});
+    });
+});
+
+app.listen(3000, () => {console.log("El servidor esta corriendo por el puerto 3000");
+});
+
+app.put("/U-person/:id",(req,res)=>{
+    const {id} = req.params;
+    const{email} =req.body;
+    console.log('email', email)
+    connection.query("UPDATE student set email=? where id =?",
+        [email,id], (err,result)=>{
+            if(err) return console.log('err', err)
+            res.json({mensaje: "cambio concretado"})
+        }
+    )
+
+}
+
+)
+
+ 
+/*
 // Middleware para parsear JSON
 app.use(bodyParser.json());
 
@@ -42,8 +89,6 @@ app.put('/productos/:id', (req, res) => {
 
     res.json({ mensaje: "Producto actualizado con éxito.", producto });
 });
-
+*/
 // Iniciar el servidor
-app.listen(port, () => {
-    console.log(Servidor corriendo en http://localhost:${port});
-});
+
